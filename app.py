@@ -4,6 +4,7 @@ import io
 import json
 import math
 import os
+import sys
 import traceback
 import uuid
 from collections import deque
@@ -11,7 +12,12 @@ from collections import deque
 from flask import Flask, jsonify, request, send_file, send_from_directory
 from PIL import Image, ImageDraw, ImageFont
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+_FROZEN = getattr(sys, "frozen", False)
+if _FROZEN:
+    BASE_DIR = os.path.dirname(os.path.abspath(sys.executable))
+    APP_DIR = getattr(sys, "_MEIPASS", BASE_DIR)
+else:
+    BASE_DIR = APP_DIR = os.path.dirname(os.path.abspath(__file__))
 FILES_DIR = os.path.join(BASE_DIR, "files")
 SEALS_DIR = os.path.join(BASE_DIR, "seals")
 os.makedirs(FILES_DIR, exist_ok=True)
@@ -22,7 +28,9 @@ SEAL_WIDTH_CM = 4.0
 SEAL_WIDTH_PX = int(round(SEAL_WIDTH_CM / 2.54 * WORK_DPI))       # 236 px
 SEAL_WIDTH_PT = SEAL_WIDTH_PX / WORK_DPI * 72                     # ~113.3 pt = 4cm
 
-app = Flask(__name__, static_folder="static", template_folder="templates")
+app = Flask(__name__,
+            static_folder=os.path.join(APP_DIR, "static"),
+            template_folder=os.path.join(APP_DIR, "templates"))
 app.config["MAX_CONTENT_LENGTH"] = 300 * 1024 * 1024
 
 
@@ -112,7 +120,7 @@ def seal_to_dict(sid, img, name):
 
 @app.get("/")
 def index():
-    return send_from_directory(os.path.join(BASE_DIR, "templates"), "index.html")
+    return send_from_directory(os.path.join(APP_DIR, "templates"), "index.html")
 
 
 @app.get("/seals/<path:name>")
@@ -325,28 +333,31 @@ def sample_contract():
 
 def office_to_pdf(src, dst):
     try:
+        import comtypes
         import comtypes.client
     except ImportError:
         raise RuntimeError("缺少 comtypes 库，请先执行 pip install comtypes")
     win_word = r"C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE"
-    if os.path.exists(win_word):
-        word = comtypes.client.CreateObject("{000209FF-0000-0000-C000-000000000046}")
-    else:
+    if not os.path.exists(win_word):
         raise RuntimeError("未检测到 Microsoft Word，请安装 Office 后重试")
+    comtypes.CoInitialize()
+    word = None
     try:
+        word = comtypes.client.CreateObject("{000209FF-0000-0000-C000-000000000046}")
         word.Visible = False
         word.DisplayAlerts = 0
         doc = word.Documents.Open(os.path.abspath(str(src)), ReadOnly=True)
         try:
-            word.Documents.ActiveDocument.Close(False) if False else None
             doc.SaveAs(os.path.abspath(str(dst)), FileFormat=17)
         finally:
             doc.Close(False)
     finally:
-        try:
-            word.Quit()
-        except Exception:
-            pass
+        if word is not None:
+            try:
+                word.Quit()
+            except Exception:
+                pass
+        comtypes.CoUninitialize()
 
 
 @app.post("/api/word2pdf")
@@ -501,6 +512,11 @@ def export_pdf():
 
 
 if __name__ == "__main__":
+    import threading
+    import webbrowser
     port = int(os.environ.get("PORT", "8765"))
-    print("电子印章服务已启动: http://127.0.0.1:%d" % port)
+    url = "http://127.0.0.1:%d" % port
+    print("电子印章服务已启动: %s" % url)
+    if not os.environ.get("NO_BROWSER"):
+        threading.Timer(1.2, lambda: webbrowser.open(url)).start()
     app.run(host="127.0.0.1", port=port, debug=False)

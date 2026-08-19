@@ -24,6 +24,21 @@ A local-run electronic seal service for PDF/Word contracts. Upload a contract, p
 | 导出保留原始页面尺寸的带章 PDF | Export stamped PDF preserving original page sizes |
 | 生成示例合同 / 示例印章 | Generate sample contract / sample seal |
 
+## 免安装版（傻瓜包） / Windows One-Click Build
+
+> 不想装 Python？**下载 `byc-e-seal.exe`（约 33 MB）双击即用：**
+>
+> - GitHub：[release/byc-e-seal.exe](https://github.com/vic-998/byc-e-seal/raw/main/release/byc-e-seal.exe)
+> - 码云 Gitee（国内更快）：[release/byc-e-seal.exe](https://gitee.com/boyicloud/byc-e-seal/raw/main/release/byc-e-seal.exe)
+> Python / Flask / Pillow / pypdf / ReportLab 全部打包在内，无需任何环境，自动打开浏览器。
+>
+> **No Python? Download the single executable — everything is bundled. Double-click and it opens in your browser.**
+>
+> 注意 / Notes：
+> - 首次运行请允许 Windows 防火墙访问（本机环回地址，安全）。
+> - Word 转 PDF 仍需本机安装 Microsoft Word（Windows 功能）。
+> - exe 为 Windows x64 构建；macOS / Linux 请走下方源码安装。
+
 ## Screenshots 使用截图
 
 **使用界面 / Web UI** — 上传合同、选择印章、骑缝章定位：

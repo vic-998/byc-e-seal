@@ -21,3 +21,10 @@ Thumbs.db
 # Local environment files
 .env
 .env.*
+
+# PyInstaller build artifacts (release/ keeps only the published exe)
+build/
+*.spec
+__pycache__/
+dist/
+!release/
