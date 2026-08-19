@@ -7,7 +7,7 @@ import os
 import sys
 import traceback
 import uuid
-from collections import deque
+
 
 from flask import Flask, jsonify, request, send_file, send_from_directory
 from PIL import Image, ImageDraw, ImageFont
@@ -44,38 +44,33 @@ def cn_font(size):
     return ImageFont.load_default()
 
 
-def _is_bg(px, threshold):
-    r, g, b, a = px
-    return a > 0 and r >= threshold and g >= threshold and b >= threshold
+def remove_white_bg(img, threshold=236, soft=34):
+    """Turn near-white pixels transparent (red ink kept).
 
-
-def remove_white_bg(img, threshold=244):
+    Handles the center of a round seal that a from-edge flood fill cannot
+    reach: any pixel whose darkest channel is near white is treated as paper
+    background and made transparent, with a soft ramp on the edges so the
+    anti-aliased red stays clean.
+    """
     img = img.convert("RGBA")
     px = img.load()
-    w, h = img.size
-    seen = set()
-    dq = deque()
-    for x in range(w):
-        for y in (0, h - 1):
-            if (x, y) not in seen and _is_bg(px[x, y], threshold):
-                seen.add((x, y))
-                dq.append((x, y))
-    for y in range(h):
-        for x in (0, w - 1):
-            if (x, y) not in seen and _is_bg(px[x, y], threshold):
-                seen.add((x, y))
-                dq.append((x, y))
-    while dq:
-        x, y = dq.popleft()
-        px[x, y] = (255, 255, 255, 0)
-        for dx in (-1, 0, 1):
-            for dy in (-1, 0, 1):
-                if dx == 0 and dy == 0:
-                    continue
-                nx, ny = x + dx, y + dy
-                if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in seen and _is_bg(px[nx, ny], threshold):
-                    seen.add((nx, ny))
-                    dq.append((nx, ny))
+    lo = threshold - soft
+    for y in range(img.height):
+        for x in range(img.width):
+            r, g, b, a = px[x, y]
+            if a == 0:
+                continue
+            m = r if r < g else g
+            if b < m:
+                m = b
+            if m >= threshold:
+                px[x, y] = (r, g, b, 0)
+            elif m > lo:
+                # soft edge: fade out toward the white side
+                new_a = int(a * (threshold - m) / soft)
+                if new_a < 0:
+                    new_a = 0
+                px[x, y] = (r, g, b, new_a)
     return img
 
 
@@ -343,12 +338,21 @@ def office_to_pdf(src, dst):
     comtypes.CoInitialize()
     word = None
     try:
+        import ctypes
+        buf = ctypes.c_wchar * 260
+        GetShortPathNameW = ctypes.windll.kernel32.GetShortPathNameW
+        def s(path):
+            out = buf()
+            n = GetShortPathNameW(path, out, 260)
+            return out.value if out.value else path
+        wsrc = s(os.path.abspath(str(src)))
+        wdst = s(os.path.abspath(str(dst)))
         word = comtypes.client.CreateObject("{000209FF-0000-0000-C000-000000000046}")
         word.Visible = False
         word.DisplayAlerts = 0
-        doc = word.Documents.Open(os.path.abspath(str(src)), ReadOnly=True)
+        doc = word.Documents.Open(wsrc, ReadOnly=True)
         try:
-            doc.SaveAs(os.path.abspath(str(dst)), FileFormat=17)
+            doc.SaveAs(wdst, FileFormat=17)
         finally:
             doc.Close(False)
     finally:
@@ -431,9 +435,9 @@ def render_stamps(src, stamps, out):
             except Exception:
                 rot = 0
             try:
-                opacity = float(s.get("opacity", 1) or 1)
+                opacity = float(s.get("opacity", 0.85) or 0.85)
             except Exception:
-                opacity = 1.0
+                opacity = 0.85
             tmp = os.path.join(SEALS_DIR, "tmp_%s.png" % uuid.uuid4().hex[:8])
             try:
                 try:
@@ -519,4 +523,4 @@ if __name__ == "__main__":
     print("电子印章服务已启动: %s" % url)
     if not os.environ.get("NO_BROWSER"):
         threading.Timer(1.2, lambda: webbrowser.open(url)).start()
-    app.run(host="127.0.0.1", port=port, debug=False)
+    app.run(host="127.0.0.1", port=port, debug=False, threaded=True)

@@ -62,7 +62,7 @@
   .page-wrap canvas { display:block; }
   .stamp { position:absolute; cursor:grab; user-select:none; -webkit-user-select:none; }
   .stamp:active { cursor:grabbing; }
-  .stamp img { display:block; width:100%; height:100%; pointer-events:none; }
+  .stamp img { display:block; width:100%; height:100%; pointer-events:none; mix-blend-mode: multiply; opacity:.92; }
   .stamp.selected { outline:2px dashed var(--primary); outline-offset:3px; }
   .stamp .tag { position:absolute; top:-20px; left:0; background:var(--primary); color:#fff; font-size:10px; padding:1px 5px; border-radius:4px; display:none; }
   .stamp.selected .tag { display:block; }
@@ -363,7 +363,7 @@ function updateSize(pg, st, el){
     img.style.transform = st.rot ? "rotate("+st.rot+"deg)" : "";
     el.style.left=(st.x*W-w/2)+"px"; el.style.top=(st.y*H-h/2)+"px";
   }
-  img.style.opacity = (st.opacity!=null ? st.opacity : 1);
+  img.style.opacity = (st.opacity!=null ? st.opacity : 0.85);
   $("#selScale").textContent = Math.round(st.scale*100)+"%";
 }
 function clamp01(v){ return Math.max(0,Math.min(1,v)); }
@@ -405,14 +405,14 @@ stage.addEventListener("click", e=>{
     for(let pageNo=from;pageNo<=to;pageNo++){
       const i=pageNo-1;
       const pp = doc.pages[i];
-      const st={id:Math.random().toString(36).slice(2),groupId,sealId:sid,x:1,y,scale:1,opacity:1,sliceCount:n,sliceIdx:pageNo-from};
+       const st={id:Math.random().toString(36).slice(2),groupId,sealId:sid,x:1,y,scale:1,opacity:0.85,sliceCount:n,sliceIdx:pageNo-from};
       pp.stamps.push(st);
       addStampEl(pp,st);
     }
     toast(`骑缝章已添加：第 ${from}–${to} 页，共 ${n} 片；拖动任一片可统一调整高度`);
     return;
   }
-  pg.stamps.push({ id:Math.random().toString(36).slice(2), sealId:sid, x, y, scale:1 });
+  pg.stamps.push({ id:Math.random().toString(36).slice(2), sealId:sid, x, y, scale:1, opacity:0.85 });
   const el = addStampEl(pg, pg.stamps[pg.stamps.length-1]);
   selectStamp(pg.stamps[pg.stamps.length-1], el);
   toast("已盖章。可拖动移动、滚轮缩放；再次点击页面可把该章移到新位置");
@@ -435,7 +435,7 @@ $("#btnExport").onclick = exportPdf;
 
 async function exportPdf(){
   if(!doc){ toast("还没有合同"); return; }
-  const all = []; doc.pages.forEach((p,i)=>p.stamps.forEach(st=>all.push({page:i+1, sealId:st.sealId, x:st.x, y:st.y, scale:st.scale, rot:st.rot||0, opacity:(st.opacity==null?1:st.opacity), sliceCount:st.sliceCount||0, sliceIdx:st.sliceIdx||0})));
+  const all = []; doc.pages.forEach((p,i)=>p.stamps.forEach(st=>all.push({page:i+1, sealId:st.sealId, x:st.x, y:st.y, scale:st.scale, rot:st.rot||0, opacity:(st.opacity==null?0.85:st.opacity), sliceCount:st.sliceCount||0, sliceIdx:st.sliceIdx||0})));
   if(!all.length){ toast("还没有添加任何印章"); return; }
   const fd = new FormData(); fd.append("fileId", doc.fid); fd.append("seals", JSON.stringify(all)); fd.append("outName", ($("#docName").value||"已盖章合同").trim()+".pdf");
   try{ toast("正在生成带印章的 PDF…"); const r=await fetch("/api/export",{method:"POST", body:fd}); const blob = await r.blob(); if(!r.ok){ const t=await blob.text().catch(()=>""); throw new Error(t.replace(/<[^>]+>/g,"").slice(0,200)||"导出失败"); }
