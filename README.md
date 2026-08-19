@@ -24,6 +24,16 @@ A local-run electronic seal service for PDF/Word contracts. Upload a contract, p
 | 导出保留原始页面尺寸的带章 PDF | Export stamped PDF preserving original page sizes |
 | 生成示例合同 / 示例印章 | Generate sample contract / sample seal |
 
+## Screenshots 使用截图
+
+**使用界面 / Web UI** — 上传合同、选择印章、骑缝章定位：
+
+<p align="center"><img src="docs/使用界面.png" alt="使用界面" width="70%"></p>
+
+**导出效果 / Exported PDF** — 骑缝章已切片贴到每页右边缘：
+
+<p align="center"><img src="docs/效果展示.png" alt="效果展示" width="70%"></p>
+
 ## Quick Start 快速开始
 
 Requirements 环境要求：
