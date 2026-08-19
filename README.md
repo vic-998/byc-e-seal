@@ -125,6 +125,7 @@ This project overlays seal images onto PDF pages. It is NOT a certified digital 
 
 - Company 公司：渤溢云拓科技有限公司
 - Email 邮箱：caoxin@boyicloud.email
+- 企业阿辅（中小企业经营决策 AI 大脑）：https://www.afuhub.com
 
 ## License 许可证
 
