@@ -1,208 +1,139 @@
-# 电子印章服务
+# 电子印章服务 | byc-e-seal
 
-一个本地运行的 PDF/Word 电子盖章工具。用户可以上传合同和印章图片，在指定页面添加普通印章或骑缝章，自由调整位置、大小、旋转角度和透明度，确认后导出新的 PDF 文件。
+A local-run electronic seal service for PDF/Word contracts. Upload a contract, place seals (including cross-page "rider seals"), adjust position / size / rotation / opacity, and export a stamped PDF.
 
-> 本项目默认仅在本机运行，合同和印章不会主动上传到第三方服务。
+渤溢云拓科技有限公司开发的本地电子盖章工具。上传 PDF 或 Word 合同，添加普通印章或骑缝章，自由调整位置、大小、旋转角度和透明度，最后导出带章 PDF。
 
-## 功能
+> 默认仅在本机运行，合同和印章不会上传到第三方服务。
+> By default this runs locally. Contracts and seal images are not sent to any third party.
 
-- 上传 PDF 合同并逐页预览
-- 上传 `.docx` / `.doc` 合同并转换为 PDF
-- 上传 PNG、JPG、JPEG 印章图片
-- 自动去除与图片边缘相连的白色背景
-- 将印章统一按真实宽度 **4 cm** 处理
-- 在当前选中的页面添加普通印章
-- 拖动印章自由调整位置
-- 使用滚轮或按钮缩放印章
-- 以 45° 为步进旋转印章
-- 调整印章透明度
-- 双击复制普通印章
-- 选择连续页码范围添加骑缝章
-- 根据所选页数自动切分骑缝章
-- 拖动任意骑缝章切片时同步调整所有页面
-- 导出保留原合同内容和页面尺寸的 PDF
+## Features 功能
 
-## 界面流程
+| 中文 | English |
+| --- | --- |
+| 上传 PDF 合同并逐页预览 | Upload PDF contract with page-by-page preview |
+| 上传 Word（.docx/.doc）自动转 PDF | Upload Word (.docx/.doc) and auto-convert to PDF |
+| 上传 PNG/JPG 印章图片 | Upload PNG/JPG seal images |
+| 自动去除白色背景 | Auto-remove white background |
+| 印章统一按 **4 cm** 标准宽处理 | Seals normalized to **4 cm** standard width |
+| 普通章：点击定位、拖动、缩放、旋转、透明度 | Regular seal: click to place, drag, resize, rotate, opacity |
+| 骑缝章：选择页码范围，自动切片贴到每页右边缘 | Rider seal: select page range, auto-slice across all pages |
+| 骑缝章切片同步拖动 / 缩放 / 删除 | Synchronized drag / resize / delete for all rider-seal slices |
+| 导出保留原始页面尺寸的带章 PDF | Export stamped PDF preserving original page sizes |
+| 生成示例合同 / 示例印章 | Generate sample contract / sample seal |
 
-1. 上传 PDF 合同，或上传 Word 合同并等待转换。
-2. 上传一张或多张印章图片。
-3. 选择要使用的印章和合同页面。
-4. 普通盖章：在当前页面空白处点击，然后拖动到目标位置。
-5. 骑缝章：填写起始页和结束页，开启“骑缝章模式”，在页面点击需要的垂直高度。
-6. 检查所有页面，输入导出文件名并点击“导出 PDF”。
+## Quick Start 快速开始
 
-印章缩放为 `100%` 时，导出到 PDF 中的真实宽度为 4 cm。缩放操作会以此尺寸为基准。
+Requirements 环境要求：
 
-## 技术栈
-
-- Python 3
-- Flask
-- Pillow
-- pypdf
-- ReportLab
-- PDF.js
-- Microsoft Word COM（仅用于 Windows 下的 Word 转 PDF）
-
-前端不依赖构建工具，PDF.js 文件已放在 `static/` 目录中。
-
-## 环境要求
-
-### PDF 功能
-
-- Python 3.10 或更高版本
-- Windows、macOS 或 Linux
-
-### Word 功能
-
-当前 Word 转 PDF 使用 Microsoft Word COM，因此需要：
-
-- Windows
-- 已安装桌面版 Microsoft Word
-- Python 包 `comtypes`
-
-没有安装 Microsoft Word 时，PDF 上传和盖章功能仍可正常使用，但不能直接转换 `.doc` / `.docx`。
-
-## 安装
+- Python 3.10+
+- Windows / macOS / Linux（PDF 功能）
+- Windows + Microsoft Word + `comtypes`（仅 Word 转 PDF 需要）
+- No build tools needed; PDF.js is bundled in `static/`
 
 ```bash
-git clone <你的仓库地址>
-cd <仓库目录>
+git clone https://github.com/vic-998/byc-e-seal
+cd byc-e-seal
 python -m venv .venv
-```
 
-Windows PowerShell：
-
-```powershell
+# Windows PowerShell
 .\.venv\Scripts\Activate.ps1
+# macOS / Linux
+# source .venv/bin/activate
+
 pip install -r requirements.txt
-```
-
-macOS / Linux：
-
-```bash
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-## 启动
-
-```bash
 python app.py
 ```
 
-浏览器访问：
+Open: http://127.0.0.1:8765/
 
-```text
-http://127.0.0.1:8765/
+自定义端口：`$env:PORT=9000` (Windows) / `PORT=9000 python app.py` (macOS/Linux)
+
+## Usage 使用说明
+
+1. **上传合同** — 拖入 PDF，或上传 Word（需本机安装 Microsoft Word）。
+2. **上传印章** — PNG/JPG，白色背景自动去除；或点击"生成示例印章"。
+3. **普通章** — 在页面空白处点击盖章，拖动调整位置，滚轮缩放，按钮旋转 / 调透明度，双击复制。
+4. **骑缝章** — 开启"骑缝章模式"，设置起止页码，在页面点击目标高度；系统按页数自动切片贴到右边缘。
+5. **导出** — 点击"导出 PDF"，文件名可在顶部"合同名"修改。
+
+100% 缩放 = 导出 PDF 中 4 cm 真实宽度。
+
+## Tech Stack 技术栈
+
+- Python 3 / Flask
+- Pillow (image processing)
+- pypdf (PDF assembly)
+- ReportLab (sample contract generation + stamp overlay)
+- PDF.js (client-side rendering)
+- comtypes (Word COM, Windows only)
+
+## Project Structure 项目结构
+
 ```
-
-可以通过环境变量修改端口：
-
-Windows PowerShell：
-
-```powershell
-$env:PORT=9000
-python app.py
-```
-
-macOS / Linux：
-
-```bash
-PORT=9000 python app.py
-```
-
-## 项目结构
-
-```text
 .
-├── app.py                    # Flask 服务、文件处理和 PDF 导出
+├── app.py                 # Flask server, seal processing, PDF export
 ├── templates/
-│   └── index.html            # 页面与全部前端交互
+│   └── index.html         # UI + all frontend logic
 ├── static/
-│   ├── pdf.min.mjs           # PDF.js
+│   ├── pdf.min.mjs
 │   └── pdf.worker.min.mjs
-├── files/                    # 运行时合同和导出文件，不应提交
-├── seals/                    # 运行时印章文件，不应提交
-├── tools/                    # 测试辅助脚本
-└── requirements.txt
+├── tools/                 # dev/test scripts
+├── requirements.txt
+├── files/                 # runtime (gitignored)
+└── seals/                 # runtime (gitignored)
 ```
 
-`files/`、`seals/`、日志和缓存目录已加入 `.gitignore`。发布代码前仍建议手动确认其中没有真实合同、印章或其他敏感资料。
+## API
 
-## 主要接口
-
-| 方法 | 路径 | 说明 |
+| Method | Path | Description |
 | --- | --- | --- |
-| `GET` | `/` | 主页面 |
-| `POST` | `/api/pdf` | 上传 PDF |
-| `POST` | `/api/word2pdf` | 上传 Word 并转换为 PDF |
-| `POST` | `/api/seal` | 上传并处理印章图片 |
-| `POST` | `/api/sample` | 生成示例合同 |
-| `POST` | `/api/sample-seal` | 生成示例印章 |
-| `POST` | `/api/export` | 合成印章并导出 PDF |
+| `GET` | `/` | Main page |
+| `POST` | `/api/pdf` | Upload PDF |
+| `POST` | `/api/word2pdf` | Upload Word → PDF |
+| `POST` | `/api/seal` | Upload & process seal image |
+| `POST` | `/api/sample` | Generate sample contract |
+| `POST` | `/api/sample-seal` | Generate sample seal |
+| `POST` | `/api/export` | Merge stamps & export PDF |
 
-## 4 cm 印章与骑缝章实现
+## Rider Seal 骑缝章原理
 
-普通印章在 PDF 中以 `4 / 2.54 × 72` point 作为 100% 宽度，避免因浏览器显示比例或屏幕 DPI 不同造成导出尺寸变化。
+The full seal image is split horizontally into N equal vertical slices (N = number of pages in the selected range). Each slice is pasted at the right edge of its respective page at the same vertical center. All slices in the same group move, scale, fade, and delete together.
 
-骑缝章会按照用户选择的连续页数把完整印章横向等分。每页在右边缘放置一个切片，各页切片按照页码顺序组合成完整印章。属于同一组的切片会同步移动、缩放、调整透明度或删除。
+完整印章按所选页数横向等分为 N 片，每片贴在对应页右边缘、同一垂直高度。同一组的切片同步移动、缩放、调透明度或删除。
 
-## 部署建议
+## Deployment 部署说明
 
-`python app.py` 启动的是 Flask 开发服务器，适合个人本地使用和开发调试，不建议直接暴露到公网。
+`python app.py` 启动的是 Flask 开发服务器，不适合直接暴露公网。生产部署建议：
 
-如需部署为多人服务，至少应补充：
+- Waitress / Gunicorn 等 WSGI 服务
+- 用户认证 + 文件隔离
+- HTTPS、CSRF、频率限制
+- 文件过期清理
 
-- 使用 Waitress、Gunicorn 等生产级 WSGI 服务
-- 用户认证和权限隔离
-- 上传文件类型、大小和内容安全检查
-- 每个用户独立的文件存储空间
-- 文件过期和自动清理机制
-- HTTPS
-- CSRF、防滥用和访问频率限制
-- 操作日志与隐私策略
+## Legal Disclaimer 法律声明
 
-印章图片和合同通常属于敏感资料。多人部署时，不应继续使用当前的共享 `files/`、`seals/` 目录作为无隔离存储。
+本项目实现的是"在 PDF 页面上叠加印章图片"，不等同于基于 CA 数字证书的电子签名。请仅在获得授权并符合当地法律的情况下使用。项目作者不对违法使用或不当使用承担责任。
 
-## 法律与合规说明
+This project overlays seal images onto PDF pages. It is NOT a certified digital signature solution. Only use with proper authorization and in compliance with applicable laws.
 
-本项目实现的是“在 PDF 页面上叠加印章图片”，不等同于基于数字证书的电子签名，也不自动具备身份认证、防篡改、可信时间戳或签名验签能力。
+## Contributing 参与贡献
 
-请仅在获得授权并符合当地法律、合同约定及组织内部制度的情况下使用。不得使用本项目伪造印章、冒用身份或处理未经授权的文件。项目作者不对违法使用或不当使用承担责任。
+欢迎提交 Issue 和 Pull Request。请勿附带真实合同、真实印章或任何敏感文件。
 
-若业务需要具有更强法律效力的电子签署能力，应接入合规的 CA 数字证书、可信时间戳、签名验签及审计体系。
+## Contact 联系
 
-## 开发与测试
+- Company 公司：渤溢云拓科技有限公司
+- Email 邮箱：caoxin@boyicloud.email
 
-后端基础测试：
+## License 许可证
 
-```bash
-python -m py_compile app.py
-python tools/test_rotop.py
-```
+MIT License
 
-建议提交代码前人工验证以下流程：
+Copyright (c) 2026 渤溢云拓科技有限公司 (Boyi Yuntuo Technology Co., Ltd.)
 
-1. PDF 上传、预览和翻页。
-2. Word 上传与转换。
-3. PNG/JPG 印章去背景。
-4. 普通章添加、拖动、缩放、旋转和透明度。
-5. 两页及多页骑缝章。
-6. 导出 PDF 后逐页检查印章位置和透明背景。
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-## 参与贡献
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-欢迎提交 Issue 和 Pull Request。提交前请避免附带真实合同、真实印章、个人信息或其他敏感文件。
-
-建议在 Pull Request 中说明：
-
-- 修改目的
-- 测试方式
-- 对 PDF 页面尺寸或坐标换算的影响
-- 是否影响 Word、普通章或骑缝章功能
-
-## 开源许可证
-
-仓库当前尚未指定开源许可证。正式发布前请根据你的使用和贡献政策添加 `LICENSE` 文件，例如 MIT、Apache-2.0 或 GPL-3.0。
-
-在许可证明确之前，默认版权仍归代码作者所有。
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -17,7 +17,6 @@ SEALS_DIR = os.path.join(BASE_DIR, "seals")
 os.makedirs(FILES_DIR, exist_ok=True)
 os.makedirs(SEALS_DIR, exist_ok=True)
 
-# 印章标准尺寸：宽 4cm
 WORK_DPI = 150
 SEAL_WIDTH_CM = 4.0
 SEAL_WIDTH_PX = int(round(SEAL_WIDTH_CM / 2.54 * WORK_DPI))       # 236 px
@@ -43,7 +42,6 @@ def _is_bg(px, threshold):
 
 
 def remove_white_bg(img, threshold=244):
-    """从边缘泛洪，去除与边界相连的白色背景，保留文字/图案内部白色"""
     img = img.convert("RGBA")
     px = img.load()
     w, h = img.size
@@ -259,7 +257,6 @@ def make_sample_contract(path):
         if y < 70:
             new_page()
 
-    # 标题
     c.setFont("CN", 20)
     title = "技 术 服 务 合 同"
     c.drawString((w - c.stringWidth(title, "CN", 20)) / 2, y, title)
@@ -380,10 +377,6 @@ def word2pdf():
 
 
 def render_stamps(src, stamps, out):
-    """按页生成叠加层 merge 到原合同。stamp 字段：
-    page(1起), x,y(中心点占页面比例 y从上往下), scale(1.0=标准4cm宽),
-    骑缝章: sliceCount(N片), sliceIdx(该片序号)
-    """
     from pypdf import PdfReader, PdfWriter
     from reportlab.pdfgen import canvas as _canvas
 

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-"""Create a small Word contract used by the end-to-end upload smoke test."""
 from pathlib import Path
 
 from docx import Document

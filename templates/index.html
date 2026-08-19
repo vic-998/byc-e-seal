@@ -166,15 +166,14 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "/static/pdf.worker.min.mjs";
 
 const $ = (s)=>document.querySelector(s);
 const stage = $("#stage"), empty = $("#empty"), statusEl = $("#status");
-let doc = null;                 // { fid, name, scale, pages:[{w,h,page,canvases,stamps:[{id,sealId,x,y,scale,el,frag,sliceCount,sliceIdx}]}], scale, pageIdx, page }
-let selected = null;            // 当前选中 stamp
+let doc = null;
+let selected = null;
 let crossMode = false;
-const seals = [];               // [{id,url,name,wPx,hPx,ratio,dataUrl}]
-let pageWcm = 21.0;             // 默认 A4 宽，用于把 4cm 换算成比例
+const seals = [];
+let pageWcm = 21.0;
 
 function toast(msg, isErr){ statusEl.textContent = msg; statusEl.classList.add("show"); if(isErr){ statusEl.classList.add("err"); } else { statusEl.classList.remove("err"); } clearTimeout(toast._t); toast._t=setTimeout(()=>statusEl.classList.remove("show","err"), 4200); }
 
-/* ---------- 印章管理 ---------- */
 function pickActiveId(){ const b=document.querySelector(".sealpick button.active"); return b ? b.dataset.sid : null; }
 function renderSealList(){
   const box = $("#sealList");
@@ -209,7 +208,6 @@ function removeSeal(sid){
   selected=null; renderSealList();
 }
 
-/* ---------- 上传合同 ---------- */
 async function uploadPdf(file){
   const f = new FormData(); f.append("file", file);
   toast("正在上传 PDF…");
@@ -265,7 +263,6 @@ async function loadDoc(fid, name){
   toast("合同加载完成");
 }
 
-/* ---------- 页面切换与渲染 ---------- */
 function showPage(i){
   if(!doc) return; doc.pages.forEach(p=>p.wrap.style.display="none");
   doc.pages[i].wrap.style.display="block"; doc.pageIdx=i; doc.page=doc.pages[i];
@@ -293,7 +290,7 @@ function deleteStamp(st){
 function addStampEl(pg, st){
   const W=pg.W, H=pg.H;
   const seal = seals.find(s=>s.id===st.sealId); if(!seal){ st.el && st.el.remove(); return; }
-  const w = W * pg.scaleF * st.scale;   // 4cm 宽 * scale
+  const w = W * pg.scaleF * st.scale;
   const h = w * seal.ratio;
   const el = document.createElement("div"); el.className="stamp";
   el.style.width=w+"px"; el.style.height=h+"px";
@@ -315,7 +312,6 @@ function addStampEl(pg, st){
   tools.querySelector(".bigger").onclick=()=>{ const v=Math.min(3, +(st.scale*1.1).toFixed(3)); changeStamp(st,x=>x.scale=v); };
   tools.querySelector(".del").onclick=()=>deleteStamp(st);
   el.appendChild(tools);
-  // 双击复制一枚
   el.addEventListener("dblclick", e=>{
     e.preventDefault();
     if(st.sliceCount>1){ toast("骑缝章不支持双击复制"); return; }
@@ -328,7 +324,6 @@ function addStampEl(pg, st){
   function upd(){ updateSize(pg,st,el); }
   st.el = el;
   upd();
-  // 拖动
   let drag=null;
   el.addEventListener("pointerdown", e=>{
     if(e.target.closest("button")) return;
@@ -381,17 +376,15 @@ function selectStamp(st, el){
 }
 function clearSelection(){ if(selected && selected.el){ selected.el.classList.remove("selected"); } selected=null; }
 
-/* ---------- 点击页面添加 / 移动 ---------- */
 stage.addEventListener("click", e=>{
   if(!doc) return;
   const wrap = e.target.closest(".page-wrap"); if(!wrap) return;
-  if(e.target.closest(".stamp")) return; // stamp 自己处理
+  if(e.target.closest(".stamp")) return;
   const rect = wrap.getBoundingClientRect();
   const x = clamp01((e.clientX-rect.left)/rect.width), y = clamp01((e.clientY-rect.top)/rect.height);
   const idx = doc.pages.findIndex(p=>p.wrap===wrap);
   const pg = doc.pages[idx];
   if(!crossMode && selected){
-    // 已选中印章：点击空白处=移动到该位置（选中普通章时不限制在当前页）
     if(selected.sliceCount>1){
       const moveSt=selected; changeStamp(selected,x=>x.y=y); selected=null;
       if(moveSt.el) moveSt.el.classList.remove("selected");
@@ -419,14 +412,12 @@ stage.addEventListener("click", e=>{
     toast(`骑缝章已添加：第 ${from}–${to} 页，共 ${n} 片；拖动任一片可统一调整高度`);
     return;
   }
-  // 普通章
   pg.stamps.push({ id:Math.random().toString(36).slice(2), sealId:sid, x, y, scale:1 });
   const el = addStampEl(pg, pg.stamps[pg.stamps.length-1]);
   selectStamp(pg.stamps[pg.stamps.length-1], el);
   toast("已盖章。可拖动移动、滚轮缩放；再次点击页面可把该章移到新位置");
 });
 
-/* ---------- 工具栏 ---------- */
 $("#pgPrev").onclick = ()=>doc && showPage(Math.max(0, doc.pageIdx-1));
 $("#pgNext").onclick = ()=>doc && showPage(Math.min(doc.pages.length-1, doc.pageIdx+1));
 $("#crossMode").onchange = e=>{
@@ -453,7 +444,6 @@ async function exportPdf(){
   }catch(e){ toast(e.message, true); }
 }
 
-/* ---------- 文件选择 ---------- */
 $("#pdfBox").onclick=()=> $("#pdfIn").click();
 $("#docBox").onclick=()=> $("#docIn").click();
 $("#sealBox").onclick=()=> $("#sealIn").click();
