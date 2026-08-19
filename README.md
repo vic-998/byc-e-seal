@@ -1,5 +1,7 @@
 # 电子印章服务 | byc-e-seal
 
+> **[渤溢云拓 · 企业阿辅](https://www.afuhub.com) — 中小企业经营决策 AI 大脑，您的专属企业智能体外脑 →**
+
 A local-run electronic seal service for PDF/Word contracts. Upload a contract, place seals (including cross-page "rider seals"), adjust position / size / rotation / opacity, and export a stamped PDF.
 
 渤溢云拓科技有限公司开发的本地电子盖章工具。上传 PDF 或 Word 合同，添加普通印章或骑缝章，自由调整位置、大小、旋转角度和透明度，最后导出带章 PDF。
