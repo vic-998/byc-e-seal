@@ -1,0 +1,5 @@
+Flask>=3.0,<4
+Pillow>=10,<13
+pypdf>=5,<7
+reportlab>=4,<5
+comtypes>=1.4,<2; platform_system == "Windows"
