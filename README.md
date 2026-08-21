@@ -28,8 +28,9 @@ A local-run electronic seal service for PDF/Word contracts. Upload a contract, p
 
 > 不想装 Python？**下载 `byc-e-seal.exe`（约 33 MB）双击即用：**
 >
-> - GitHub：[release/byc-e-seal.exe](https://github.com/vic-998/byc-e-seal/raw/main/release/byc-e-seal.exe)
-> - 码云 Gitee（国内更快）：[release/byc-e-seal.exe](https://gitee.com/boyicloud/byc-e-seal/raw/main/release/byc-e-seal.exe)
+> - GitHub Releases（推荐）：[byc-e-seal.exe](https://github.com/vic-998/byc-e-seal/releases/latest/download/byc-e-seal.exe) — 含 v1.0.0 傻瓜包
+> - 码云 Gitee Releases（国内更快）：[byc-e-seal.exe](https://gitee.com/boyicloud/byc-e-seal/releases/download/v1.0.0/byc-e-seal.exe)
+> - 仓库直链（备用）：[release/byc-e-seal.exe](https://github.com/vic-998/byc-e-seal/raw/main/release/byc-e-seal.exe)
 > Python / Flask / Pillow / pypdf / ReportLab 全部打包在内，无需任何环境，自动打开浏览器。
 >
 > **No Python? Download the single executable — everything is bundled. Double-click and it opens in your browser.**
